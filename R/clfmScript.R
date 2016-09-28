@@ -11,7 +11,8 @@ source(file.path("R", "clfm.R"))
 Triangle <- GenIns
 #Triangle <- ChainLadder:::checkTriangle(Triangle)
 selected <- attr(ata(Triangle), "vwtd")
-clfm(Triangle, selected)
+#clfm(Triangle, selected)
+#stop()
 alpha <- tryCatch(clfmAlpha(Triangle, selected), # user can supply tolerance
                   error = function(e) e)
 if (inherits(alpha, "error")) stop("Error solving for alpha")
@@ -22,8 +23,9 @@ parms <- clParms(CL)
 #row.names(parms) <- colnames(Triangle)[-1L]
 #parms[9, 2] <- .01
 #parms[9, 3] <- 40
-#clparms <- parms
-#tail <- 1.0
-#tail.se <- 0.0
-#tail.sigma <- 0.0
+clparms <- parms
+tail <- 1.0
+tail.se <- 0.0
+tail.sigma <- 0.0
+tail.alpha = 1
 future <- futureTriangles(Triangle, parms)
