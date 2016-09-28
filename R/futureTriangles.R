@@ -26,7 +26,7 @@ futureTriangles <- function(Triangle, clparms,
 
   n1 <- n+1
   
-  ft <- ft.d <- ft.g <- matrix(NA, nrow = (m <- nrow(Triangle)), ncol = n1,
+  ft <- ft.d <- ft.g <- matrix(as.numeric(NA), nrow = (m <- nrow(Triangle)), ncol = n1,
                dimnames = list(names(mcd), c( colnames(Triangle), "Inf")))
 
   
@@ -49,8 +49,12 @@ futureTriangles <- function(Triangle, clparms,
       }
     }
   }
-  # Project the total row
-  FT <- FT.d <- FT.g <- structure(numeric(n1), names = colnames(ft))
+  # Project stats for the total row
+  FT.d <- FT.g <- structure(rep(as.numeric(NA), n1), names = colnames(ft))
+  FT <- colSums(ft, na.rm = TRUE)
+  FT[apply(ft, 2, function(x) all(is.na(x)))] <- NA
+  
+  
   
   list(ft = ft, ft.d = sqrt(ft.d), ft.g = sqrt(ft.g), 
        FT = FT, FT.d = sqrt(FT.d), FT.g = sqrt(FT.g),
