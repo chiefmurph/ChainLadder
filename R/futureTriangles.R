@@ -26,7 +26,7 @@ futureTriangles <- function(Triangle, clparms,
 
   n1 <- n+1
   
-  ft <- ft.d <- ft.g <- matrix(as.numeric(NA), nrow = (m <- nrow(Triangle)), ncol = n1,
+  ft <- ft.d <- ft.g <- matrix(0, nrow = (m <- nrow(Triangle)), ncol = n1,
                dimnames = list(names(mcd), c( colnames(Triangle), "Inf")))
 
   
@@ -44,17 +44,31 @@ futureTriangles <- function(Triangle, clparms,
         ft.d[i, target] <- ft[i, srce]^2 * f.se2[target] + f2[target] * ft.d[i, srce] +
           f.se2[target] * ft.d[i, srce]
         ft.g[i, target] <- #expectedValueXtoTheAlpha(ft[i, srce], alpha[target]) * sigma
-          (ft[i, srce]^alpha[target] + .5*alpha[target]*(alpha[target]-1)*ft.g[i, srce]) *
+          (ft[i, srce]^alpha[target] + 
+             .5 * alpha[target] * (alpha[target]-1) * ft[i, srce]^(alpha[target] - 2) * ft.g[i, srce]) *
           sigma2[target] + f2[target] * ft.g[i, srce]
       }
     }
   }
   # Project stats for the total row
-  FT.d <- FT.g <- structure(rep(as.numeric(NA), n1), names = colnames(ft))
+  FT.d <- FT.g <- structure(numeric(n1), names = colnames(ft))
   FT <- colSums(ft, na.rm = TRUE)
-  FT[apply(ft, 2, function(x) all(is.na(x)))] <- NA
+  #FT[apply(ft, 2, function(x) all(is.na(x)))] <- NA
   
-  
+  # Total up most current diagonal by age at source of development periods
+  mcdsourceage <- attr(mcd, "colnames")
+  M <- sapply(sourcenms, function(s) sum(mcd[mcdsourceage == s]))
+  for (i in 1:n) {
+    srce <- sourcenms[i]
+    target <- targetnms[i]
+    AmtDeveloped <- M[srce] + FT[srce]
+    FT.d[target] <- (AmtDeveloped)^2 * f.se2[target] + f2[target] * FT.d[srce] +
+      f.se2[target] * FT.d[srce]
+    FT.g[target]  <- #expectedValueXtoTheAlpha(ft[i, srce], alpha[target]) * sigma
+      (AmtDeveloped^alpha[target] + 
+         .5 * alpha[target] * (alpha[target]-1) * AmtDeveloped^(alpha[target] - 2) * FT.g[srce]) *
+      sigma2[target] + f2[target] * FT.g[srce]
+  }
   
   list(ft = ft, ft.d = sqrt(ft.d), ft.g = sqrt(ft.g), 
        FT = FT, FT.d = sqrt(FT.d), FT.g = sqrt(FT.g),
