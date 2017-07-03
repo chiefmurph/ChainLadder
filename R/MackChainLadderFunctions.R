@@ -343,12 +343,28 @@ tail.SE <- function(FullTriangle, StdErr, Total.SE, tail.factor, tail.se = NULL,
   stopifnot(n > 2) # Must have at least two columns in the original triangle
   # to impute estimates for the tail-driven, 
   # previously c-bind-ed Ultimate column
-  start <- 1
+print(dimnames(FullTriangle))
+print(StdErr$f)
+print(StdErr$f.se)
+print(StdErr$sigma)
+start <- 1
   .f <- StdErr$f[start:(n - 2)]
   .dev <- c(start:(n - 2))
   ##    mf <- lm(log(.f[.f>1]-1) ~ .dev[.f>1])
   mf <- lm(log(.f-1) ~ .dev)
+plot(log(.f-1) ~ .dev, xlim=c(-20,10), ylim=c(-8,-4))
+abline(lsfit(.dev, log(.f-1)))
+abline(h=log(StdErr$f[n - 1] - 1), lty="dashed")
+print(lsfit(.dev, log(.f-1)))
+#    op <- par(mfrow = c(2, 2), oma = c(0, 0, 2, 0))
+#  plot(mf)
+#  par(op)
   tail.pos <- (log(StdErr$f[n - 1] - 1) - coef(mf)[1]) / coef(mf)[2]
+print(summary(mf))
+print(StdErr$f[n - 1])
+print(log(StdErr$f[n - 1] - 1))
+print(n)
+print(tail.pos)
   
   if(is.null(tail.se)){
     .fse <- StdErr$f.se[start:(n-2)]
@@ -358,6 +374,10 @@ tail.SE <- function(FullTriangle, StdErr, Total.SE, tail.factor, tail.se = NULL,
       .devse <- .dev[ndx]
       .fse <- .fse[ndx]
       mse <- lm(log(.fse) ~ .devse)
+#      op <- par(mfrow = c(2, 2), oma = c(0, 0, 2, 0))
+#      plot(mse)
+#      par(op)
+#plot(lm(log(.fse) ~ .devse))
       if (numpos > 1) tail.se <- exp(predict(mse, newdata=data.frame(.devse=tail.pos)))
       else {
         warning("Only one column for estimating tail.se")
@@ -380,6 +400,9 @@ tail.SE <- function(FullTriangle, StdErr, Total.SE, tail.factor, tail.se = NULL,
       .devsigma <- .dev[ndx]
       .sigma <- .sigma[ndx]
       msig <- lm(log(.sigma) ~ .devsigma)
+#      op <- par(mfrow = c(2, 2), oma = c(0, 0, 2, 0))
+#      plot(msig)
+#      par(op)
       if (numpos > 1) tail.sigma <- exp(
         predict(msig, newdata = data.frame(.devsigma = tail.pos)))
       else {
